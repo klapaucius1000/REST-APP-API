@@ -93,8 +93,8 @@ class PrivateBookAPITests(TestCase):
     def test_book_list_limited_to_user(self):
         """ Test list of book is limited to auth user."""
         other_user = get_user_model().objects.create_user(
-            'another@example.com',
-            'sample1232',
+            email='another@example.com',
+            password='sample1232',
         )
 
         create_book(user=other_user)
@@ -117,21 +117,7 @@ class PrivateBookAPITests(TestCase):
         serializer = BookDetailSerializer(book)
         self.assertEqual(res.data, serializer.data)
 
-    def test_create_book(self):
-        """Test creating a new entry"""
-        payload = {
-            'title': 'Sample  entry',
-            'author': 'Johny Bravo',
-            'cost': Decimal('5.50'),
-        }
 
-        res = self.client.post(BOOKS_URL, payload)
-
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        book = Book.objects.get(id=res.data['id'])
-        for k, v in payload.items():
-            self.assertEqual(getattr(book, k), v)
-        self.assertEqual(book.user, self.user)
 
     def test_partial_update(self):
         """Test partial update of entry."""

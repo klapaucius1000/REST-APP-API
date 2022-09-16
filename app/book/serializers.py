@@ -19,5 +19,5 @@ class BookSerializer(serializers.ModelSerializer):
 class BookDetailSerializer(BookSerializer):
 	"""Serializer for book details view"""
 
-	class Meta(BookSerializer):
+	class Meta(BookSerializer.Meta):
 		fields = BookSerializer.Meta.fields + ['description']
