@@ -117,14 +117,12 @@ class PrivateBookAPITests(TestCase):
         serializer = BookDetailSerializer(book)
         self.assertEqual(res.data, serializer.data)
 
-
-
     def test_partial_update(self):
         """Test partial update of entry."""
         original_link = "https://example.com/book.pdf"
         book = create_book(
             user=self.user,
-            title='sample',
+            title='sample title',
             link=original_link
 
         )

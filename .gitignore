@@ -127,3 +127,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+# Other
+.docx
+/~$CKEND NOTATKI1.docx
