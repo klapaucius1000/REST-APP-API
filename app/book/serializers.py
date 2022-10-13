@@ -21,3 +21,11 @@ class BookDetailSerializer(BookSerializer):
 
 	class Meta(BookSerializer.Meta):
 		fields = BookSerializer.Meta.fields + ['description']
+
+class TagSerializer(serializers.ModelSerializer):
+    """Serializer for tags"""
+
+    class Meta:
+        model = Tag
+        fields = ['id', 'name']
+        read_only_fields = ['id']
