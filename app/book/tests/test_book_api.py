@@ -9,7 +9,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Book
+from core.models import Book, Tag
 
 from book.serializers import BookSerializer, BookDetailSerializer
 
@@ -197,3 +197,100 @@ class PrivateBookAPITests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(Book.objects.filter(id=book.id).exists())
+
+    def test_create_book_with_new_tags(self):
+        """Test creating a book with new tags."""
+
+        payload = {
+            'title': 'Przygody dobrego wojaka Szwejka',
+            'author': 'Jaroslav Hasek',
+            'description': 'sample',
+            'category': 'Novel',
+            'number_of_pages': 121,
+            'language': 'Cesky',
+            'cost': Decimal('15.50'),
+            'link': 'https://example.com/new-book.pdf',
+            'tags': [{'name': 'Funny'}, {'name': 'read once again'}],
+        }
+        res = self.client.post(BOOKS_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        books = Book.objects.filter(user=self.user)
+        self.assertEqual(books.count(), 1)
+        book = books[0]
+        self.assertEqual(book.tags.count(), 2)
+        for tag in payload['tags']:
+            exists = book.tags.filter(
+                name=tag['name'],
+                user=self.user,
+            ).exists()
+            self.assertTrue(exists)
+
+    def test_create_book_with_exisitng_tags(self):
+        """Test creating a book with existing tags."""
+        tag_pilipiuk = Tag.objects.create(user=self.user, name='Pilipiuk')
+        payload = {
+            'author': 'Andrzej Pilipiuk',
+            'title': 'Faceci w gumofilcach',
+            'category': 'Novel',
+            'number_of_pages': 212,
+            'language': 'Polski',
+            'cost': Decimal('35.50'),
+            'description': 'sample description',
+            'tags': [{'name': 'Pilipiuk'}, {'name': 'love this'}],
+        }
+        res = self.client.post(BOOKS_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        books = Book.objects.filter(user=self.user)
+        self.assertEqual(books.count(), 1)
+        book = books[0]
+        self.assertEqual(book.tags.count(), 2)
+        self.assertIn(tag_pilipiuk, book.tags.all())
+        for tag in payload['tags']:
+            exists = book.tags.filter(
+                name=tag['name'],
+                user=self.user,
+            ).exists()
+            self.assertTrue(exists)
+
+    def test_create_tag_on_update(self):
+        """Test creating tag when update a book."""
+        book = create_book(user=self.user)
+
+        payload = {'tags': [{'name': 'Czarnyszewicz'}]}
+        url = detail_url(book.id)
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        new_tag = Tag.objects.get(user=self.user, name='Czarnyszewicz')
+        self.assertIn(new_tag, book.tags.all())
+
+    def test_update_book_assign_tag(self):
+        """Test assigning an existing tag when updating a book."""
+
+        tag_taleb = Tag.objects.create(user=self.user, name='Taleb')
+        book = create_book(user=self.user)
+        book.tags.add(tag_taleb)
+
+        tag_czarnyszewicz = Tag.objects.create(user=self.user, name='Czarnyszewicz')
+        payload = {'tags': [{'name': 'Czarnyszewicz'}]}
+        url = detail_url(book.id)
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn(tag_czarnyszewicz, book.tags.all())
+        self.assertNotIn(tag_taleb, book.tags.all())
+
+    def test_clear_book_tags(self):
+        """Test clearing a books tags."""
+        tag = Tag.objects.create(user=self.user, name='Bieszanow')
+        book = create_book(user=self.user)
+        book.tags.add(tag)
+
+        payload = {'tags': []}
+        url = detail_url(book.id)
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(book.tags.count(), 0)
