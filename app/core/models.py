@@ -62,6 +62,7 @@ class Book(models.Model):
     cost = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     link = models.CharField(max_length=255, blank=True)
     tags = models.ManyToManyField('Tag')
+    reviews = models.ManyToManyField('Review')
 
     def __str__(self):
         return self.title
@@ -70,6 +71,18 @@ class Book(models.Model):
 class Tag(models.Model):
     """Tag for filtering our books"""
     name = models.CharField(max_length=255)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
+    def __str__(self):
+        return self.name
+
+
+class Review(models.Model):
+    """Reviews of books read ."""
+    name = models.TextField(null=True,blank=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

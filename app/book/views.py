@@ -6,7 +6,7 @@ from rest_framework import viewsets, mixins
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from core.models import Book, Tag
+from core.models import Book, Tag, Review
 from book import serializers
 
 
@@ -29,10 +29,6 @@ class BookViewSet(viewsets.ModelViewSet):
 
         return self.serializer_class
 
-    def perform_create(self, serializer):
-        """Create a new annotation of book."""
-        serializer.save(user=self.request.user)
-
 
 class TagViewSet(mixins.UpdateModelMixin,
                  mixins.DestroyModelMixin,
@@ -46,4 +42,21 @@ class TagViewSet(mixins.UpdateModelMixin,
 
     def get_queryset(self):
         """Retrieve tags fot auth user."""
+        return self.queryset.filter(user=self.request.user).order_by('-name')
+
+    def perform_create(self, serializer):
+        """Create a new annotation of book."""
+        serializer.save(user=self.request.user)
+
+
+class ReviewViewSet(mixins.UpdateModelMixin,mixins.DestroyModelMixin,
+                    mixins.ListModelMixin,viewsets.GenericViewSet):
+    """Manage reviews in the DB."""
+    serializer_class = serializers.ReviewSerializer
+    queryset = Review.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Filter queryset to  auth user."""
         return self.queryset.filter(user=self.request.user).order_by('-name')

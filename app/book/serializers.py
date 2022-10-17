@@ -4,7 +4,16 @@ Serializers for book APIs.
 
 from rest_framework import serializers
 
-from core.models import Book, Tag
+from core.models import Book, Tag, Review
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    """Serializer for reviews"""
+
+    class Meta:
+        model = Review
+        fields = ['id', 'name']
+        read_only_fields = ['id']
 
 
 class TagSerializer(serializers.ModelSerializer):

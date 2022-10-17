@@ -8,40 +8,41 @@ from core import models
 
 
 class UserAdmin(BaseUserAdmin):
-	""" Defining the admin pages for users"""
-	ordering = ['id']
-	list_display = ['email', 'name']
-	fieldsets = (
-		(None, {'fields': ('email', 'password')}),
-		(
-			translate('Permissions'),
-			{
-				'fields': (
-					'is_active',
-					'is_staff',
-					'is_superuser',
-				)
-			}
-		),
-		(translate('Important dates'), {'fields': ('last_login',)}),
-	)
-	readonly_fields = ['last_login']
-	add_fieldsets = (
-		(None, {
-			'classes': ('wide',),
-			'fields': (
-				'email',
-				'password1',
-				'password2',
-				'name',
-				'is_active',
-				'is_staff',
-				'is_superuser',
-			),
-		}),
-	)
+    """ Defining the admin pages for users"""
+    ordering = ['id']
+    list_display = ['email', 'name']
+    fieldsets = (
+        (None, {'fields': ('email', 'password')}),
+        (
+            translate('Permissions'),
+            {
+                'fields': (
+                    'is_active',
+                    'is_staff',
+                    'is_superuser',
+                )
+            }
+        ),
+        (translate('Important dates'), {'fields': ('last_login',)}),
+    )
+    readonly_fields = ['last_login']
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': (
+                'email',
+                'password1',
+                'password2',
+                'name',
+                'is_active',
+                'is_staff',
+                'is_superuser',
+            ),
+        }),
+    )
 
 
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Book)
 admin.site.register(models.Tag)
+admin.site.register(models.Review)
