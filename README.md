@@ -8,3 +8,11 @@ it will be something like the Polish portal lubimyczytac.pl
 31.08.22
 
 work in progress...
+
+17.10.22
+After computer breakdown the pace of work was quite slowy.
+I have now added a tag model to the API, 
+the ability to add images
+and a filtering mechanism will also be added.
+
+
