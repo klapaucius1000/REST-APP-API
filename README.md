@@ -9,10 +9,11 @@ it will be something like the Polish portal lubimyczytac.pl
 
 work in progress...
 
-17.10.22
-After computer breakdown the pace of work was quite slowy.
-I have now added a tag model to the API, 
-the ability to add images
-and a filtering mechanism will also be added.
+17.10.22<br>
+
+<h3>After computer breakdown the pace of work was quite slowy.<b>
+I have now added a tag model to the API, <b>
+the ability to add images<b>
+and a filtering mechanism will also be added.<b></h3>
 
 
