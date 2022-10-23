@@ -1,5 +1,8 @@
 '''Our DB Models'''
 
+import uuid
+import os
+
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.conf import settings
@@ -38,36 +41,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-
-
-class Book(models.Model):
-    """Our virtual book storage model."""
-
-    TYPES_OF_BOOKS = (
-        ('Drama', 'Drama'),
-        ('Novel', 'Novel'),
-        ('Non-fiction', 'Non-fiction'),
-        ('Science', 'Science'),
-        ('Essay', 'Essay'),
-        ('Reportage', 'Reportage'),
-    )
-
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, )
-    title = models.CharField(max_length=255)
-    author = models.CharField(max_length=255, blank=True)
-    description = models.TextField(blank=True)
-    category = models.CharField(max_length=11, choices=TYPES_OF_BOOKS)
-    number_of_pages = models.IntegerField()
-    language = models.CharField(max_length=255)
-    cost = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
-    link = models.CharField(max_length=255, blank=True)
-    tags = models.ManyToManyField('Tag')
-    reviews = models.ManyToManyField('Review')
-
-    def __str__(self):
-        return self.title
-
-
 class Tag(models.Model):
     """Tag for filtering our books"""
     name = models.CharField(max_length=255)
@@ -82,7 +55,7 @@ class Tag(models.Model):
 
 class Review(models.Model):
     """Reviews of books read ."""
-    name = models.TextField(null=True,blank=True)
+    name = models.TextField(null=True, blank=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -90,3 +63,33 @@ class Review(models.Model):
 
     def __str__(self):
         return self.name
+
+class Book(models.Model):
+    """Our virtual book storage model."""
+
+    TYPES_OF_BOOKS = (
+        ('Drama', 'Drama'),
+        ('Novel', 'Novel'),
+        ('Non-fiction', 'Non-fiction'),
+        ('Science', 'Science'),
+        ('Essay', 'Essay'),
+        ('Reportage', 'Reportage'),
+    )
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,)
+    title = models.CharField(max_length=255)
+    author = models.CharField(max_length=255, blank=True)
+    description = models.TextField(blank=True)
+    category = models.CharField(max_length=11, choices=TYPES_OF_BOOKS)
+    number_of_pages = models.IntegerField()
+    language = models.CharField(max_length=255)
+    cost = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    link = models.CharField(max_length=255, blank=True)
+    tags = models.ManyToManyField(Tag)
+    reviews = models.ManyToManyField(Review)
+
+    def __str__(self):
+        return self.title
+
+
+

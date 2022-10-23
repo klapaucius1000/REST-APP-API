@@ -28,9 +28,11 @@ class TagSerializer(serializers.ModelSerializer):
 class BookSerializer(serializers.ModelSerializer):
     """Serializer for books"""
     tags = TagSerializer(many=True, required=False)
+    reviews = ReviewSerializer(many=True, required=False)
+
     class Meta:
         model = Book
-        fields = ['id', 'title', 'author', 'number_of_pages', 'category', 'language', 'link', 'tags']
+        fields = ['id', 'title', 'author', 'number_of_pages', 'category', 'language', 'link', 'tags', 'reviews']
         read_only_fields = ['id']
 
     def _get_or_create_tags(self, tags, book):
@@ -39,24 +41,40 @@ class BookSerializer(serializers.ModelSerializer):
         for tag in tags:
             tag_obj, created = Tag.objects.get_or_create(
                 user=auth_user,
-                     ** tag,
+                **tag,
             )
             book.tags.add(tag_obj)
+
+    def _get_or_create_rewievs(self, reviews, book):
+        """Handle getting or creating reviews as needed."""
+        auth_user = self.context['request'].user
+        for review in reviews:
+            review_obj, create = Review.objects.get_or_create(
+                user=auth_user,
+                **tag,
+            )
+            book.tags.add(review_obj)
 
     def create(self, validated_data):
         """Create a book."""
         tags = validated_data.pop('tags', [])
+        reviews = validated_data.pop('tags', [])
         book = Book.objects.create(**validated_data)
         self._get_or_create_tags(tags, book)
+        self._get_or_create_tags(reviews, book)
 
         return book
 
     def update(self, instance, validated_data):
         """Update book."""
         tags = validated_data.pop('tags', None)
+        reviews = validated_data.pop('reviews', None)
         if tags is not None:
             instance.tags.clear()
             self._get_or_create_tags(tags, instance)
+        if reviews is not None:
+            instance.reviews.clear()
+            self._get_or_create_tags(reviews, instance)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)

@@ -9,7 +9,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Book, Tag
+from core.models import Book, Tag, Review
 
 from book.serializers import BookSerializer, BookDetailSerializer
 
@@ -294,3 +294,98 @@ class PrivateBookAPITests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(book.tags.count(), 0)
+
+    def test_create_book_with_new_review(self):
+        """Test creating a book with new reviews"""
+        payload = {
+            'author': 'Tymon Grabowski',
+            'title': 'Kuba wyspa gratów',
+            'category': 'Reportage',
+            'number_of_pages': 212,
+            'language': 'Polski',
+            'cost': Decimal('33.33'),
+            'description': 'sample description',
+            'reviews': [{'name': 'some text1'}, {'name': 'some text2'}, {'name': 'some text3'}]
+        }
+        res = self.client.post(BOOKS_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        books = Book.objects.filter(user=self.user)
+        self.assertEqual(books.count(), 1)
+        book = books[0]
+        self.assertEqual(book.reviews.count(), 3)
+        for review in payload['reviews']:
+            exists = book.reviews.filter(
+                name=review['name'],
+                user=self.user,
+            ).exists()
+            self.assertTrue(exists)
+
+    def test_create_book_with_existing_review(self):
+        """Test creating a new book with existing reviews."""
+        review = Review.objects.create(user=self.user, name='some text2')
+        payload = {
+            'author': 'Tymon Grabowski',
+            'title': 'Paskudnik warszawski',
+            'category': 'Reportage',
+            'number_of_pages': 122,
+            'language': 'Polski',
+            'cost': Decimal('33.33'),
+            'description': 'sample description',
+            'reviews': [{'name': 'some text1'}, {'name': 'some text2'}, {'name': 'some text3'}]
+        }
+        res = self.client.post(BOOKS_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        books = Book.objects.filter(user=self.user)
+        self.assertEqual(books.count(), 1)
+        book = books[0]
+        self.assertEqual(book.reviews.count(), 3)
+        self.assertIn(review, book.reviews.all())
+        for review in payload['reviews']:
+            exists = book.reviews.filter(
+                name=review['name'],
+                user=self.user,
+            ).exists()
+            self.assertTrue(exists)
+
+    def test_create_review_on_update(self):
+        """Test creating a review when updating book."""
+        book = create_book(user=self.user)
+
+        payload = {'reviews': [{'name': 'some text4'}]}
+        url = detail_url(book.id)
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        new_review = Review.objects.get(user=self.user, name='some text4')
+        self.assertIn(new_review, book.reviews.all())
+
+    def test_update_book_assign_review(self):
+        """Test assigning an existing review when updating a book."""
+        review1 = Review.objects.create(user=self.user, name='some text5')
+        book = create_book(user=self.user)
+        book.reviews.add(review1)
+
+        review2 = Review.objects.create(user=self.user, name='some text6')
+        payload = {'reviews': [{'name': 'some text6'}]}
+        url = detail_url(book.id)
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn(review2, book.reviews.all())
+        self.assertNotIn(review1, book.reviews.all())
+
+    def test_clear_book_reviews(self):
+        """Test clearing a books reviews."""
+        review = Review.objects.create(user=self.user, name='some text7')
+        book = create_book(user=self.user)
+        book.reviews.add(review)
+
+        payload = {'reviews': []}
+        url = detail_url(book.id)
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(book.reviews.count(), 0)
+
