@@ -8,6 +8,14 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.conf import settings
 
 
+def book_image_file_path(instance, filename):
+    """Generate file path for new book image."""
+    ext = os.path.splitext(filename)[1]
+    filename = f'{uuid.uuid4()}{ext}'
+
+    return os.path.join('uploads', 'book', filename)
+
+
 class UserManager(BaseUserManager):
     """Manager for our users."""
 
@@ -41,6 +49,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
+
+
 class Tag(models.Model):
     """Tag for filtering our books"""
     name = models.CharField(max_length=255)
@@ -64,6 +74,7 @@ class Review(models.Model):
     def __str__(self):
         return self.name
 
+
 class Book(models.Model):
     """Our virtual book storage model."""
 
@@ -76,7 +87,7 @@ class Book(models.Model):
         ('Reportage', 'Reportage'),
     )
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, )
     title = models.CharField(max_length=255)
     author = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)
@@ -87,9 +98,7 @@ class Book(models.Model):
     link = models.CharField(max_length=255, blank=True)
     tags = models.ManyToManyField(Tag)
     reviews = models.ManyToManyField(Review)
+    image = models.ImageField(null=True, upload_to=book_image_file_path)
 
     def __str__(self):
         return self.title
-
-
-
