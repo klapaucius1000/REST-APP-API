@@ -398,6 +398,50 @@ class PrivateBookAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(book.reviews.count(), 0)
 
+    def test_filter_by_tags(self):
+        """Filter books by tag Test"""
+        book1 = create_book(user=self.user, title='anotherbook1')
+        book2 = create_book(user=self.user, title='anotherbook2')
+        tag1 = Tag.objects.create(user=self.user, name='funny')
+        tag2 = Tag.objects.create(user=self.user, name='not funny')
+        book1.tags.add(tag1)
+        book2.tags.add(tag2)
+        book3 = create_book(user=self.user, title='anotherbook3')
+
+        params = {'tags': f'{tag1.id}, {tag2.id}'}
+        res = self.client.get(BOOKS_URL, params)
+
+        s1 = BookSerializer(book1)
+        s2 = BookSerializer(book2)
+        s3 = BookSerializer(book3)
+
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
+
+
+    def test_filter_by_reviews(self):
+        """Filter books by reviews Test"""
+        book1 = create_book(user=self.user, title='anotherbook4')
+        book2 = create_book(user=self.user, title='anotherbook5')
+        review1 = Review.objects.create(user=self.user, name='some text1')
+        review2 = Review.objects.create(user=self.user, name='some text2')
+        book1.reviews.add(review1)
+        book2.reviews.add(review2)
+        book3 = create_book(user=self.user, title='anotherbook6')
+
+        params = {'reviews': f'{review1.id}, {review2.id}'}
+        res = self.client.get(BOOKS_URL, params)
+
+        s1 = BookSerializer(book1)
+        s2 = BookSerializer(book2)
+        s3 = BookSerializer(book3)
+
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
+
+
 
 class ImageUploadTests(TestCase):
     """Tests for the image upload API."""

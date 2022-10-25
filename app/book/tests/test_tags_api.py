@@ -2,6 +2,8 @@
 Tests for tags API
 """
 
+from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.test import TestCase
@@ -94,3 +96,58 @@ class PrivateTagsApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
         tags = Tag.objects.filter(user=self.user)
         self.assertFalse(tags.exists())
+
+    def test_filter_tags_assigned_to_books(self):
+        """Test summary of tags of books assigned to it."""
+        tag1 = Tag.objects.create(user=self.user, name='Funny')
+        tag2 = Tag.objects.create(user=self.user, name='Not Funny')
+        book = Book.objects.create(
+            author='Tymon Grabowski',
+            title='Grzybologika',
+            category='Essay',
+            number_of_pages=122,
+            language='Polski',
+            cost=Decimal('33.33'),
+            description='sample description',
+            user=self.user,
+        )
+        book.tags.add(tag1)
+
+        res = self.client.get(TAGS_URL, {'assigned_only': 1})
+
+        s1 = TagSerializer(tag1)
+        s2 = TagSerializer(tag2)
+        self.assertIn(s1.data, res.data)
+        self.assertNotIn(s2.data, res.data)
+
+
+    def test_filtered_tags_unique(self):
+        """Test filtered of tags returns a unique list."""
+        tag = Tag.objects.create(user=self.user, name='Funny')
+        Tag.objects.create(user=self.user, name='Not Funny')
+        book1 = Book.objects.create(
+            author='Tymon Grabowski',
+            title='Grzybologika',
+            category='Essay',
+            number_of_pages=122,
+            language='Polski',
+            cost=Decimal('33.33'),
+            description='sample description',
+            user=self.user,
+        )
+        book2 = Book.objects.create(
+            author='Tymon Grabowski2',
+            title='Grzybologika2',
+            category='Essay',
+            number_of_pages=112,
+            language='Polski',
+            cost=Decimal('33.13'),
+            description='sample description2',
+            user=self.user,
+        )
+        book1.tags.add(tag)
+        book2.tags.add(tag)
+
+        res = self.client.get(TAGS_URL, {'assigned_only': 1})
+
+        self.assertEqual(len(res.data), 1)
