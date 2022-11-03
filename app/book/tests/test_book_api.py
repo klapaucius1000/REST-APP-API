@@ -314,7 +314,7 @@ class PrivateBookAPITests(TestCase):
             'language': 'Polski',
             'cost': Decimal('33.33'),
             'description': 'sample description',
-            'reviews': [{'name': 'some text1'}, {'name': 'some text2'}, {'name': 'some text3'}]
+            'reviews': [{'name': 'some text1'}, {'name': 'some text2'}, {'name': 'some text3'}],
         }
         res = self.client.post(BOOKS_URL, payload, format='json')
 
@@ -341,7 +341,7 @@ class PrivateBookAPITests(TestCase):
             'language': 'Polski',
             'cost': Decimal('33.33'),
             'description': 'sample description',
-            'reviews': [{'name': 'some text1'}, {'name': 'some text2'}, {'name': 'some text3'}]
+            'reviews': [{'name': 'some text1'}, {'name': 'some text2'}, {'name': 'some text3'}],
         }
         res = self.client.post(BOOKS_URL, payload, format='json')
 
@@ -419,7 +419,6 @@ class PrivateBookAPITests(TestCase):
         self.assertIn(s2.data, res.data)
         self.assertNotIn(s3.data, res.data)
 
-
     def test_filter_by_reviews(self):
         """Filter books by reviews Test"""
         book1 = create_book(user=self.user, title='anotherbook4')
@@ -440,7 +439,6 @@ class PrivateBookAPITests(TestCase):
         self.assertIn(s1.data, res.data)
         self.assertIn(s2.data, res.data)
         self.assertNotIn(s3.data, res.data)
-
 
 
 class ImageUploadTests(TestCase):
@@ -472,7 +470,6 @@ class ImageUploadTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertIn('image', res.data)
         self.assertTrue(os.path.exists(self.book.image.path))
-
 
     def test_upload_image_bad_request(self):
         """Test uploading an invalid image."""

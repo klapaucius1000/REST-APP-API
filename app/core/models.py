@@ -51,6 +51,38 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
 
 
+class Book(models.Model):
+    """Our virtual book storage model."""
+
+    TYPES_OF_BOOKS = (
+        ('Drama', 'Drama'),
+        ('Novel', 'Novel'),
+        ('Non-fiction', 'Non-fiction'),
+        ('Science', 'Science'),
+        ('Essay', 'Essay'),
+        ('Reportage', 'Reportage'),
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    title = models.CharField(max_length=255)
+    author = models.CharField(max_length=255, blank=True)
+    description = models.TextField(blank=True)
+    category = models.CharField(max_length=11, choices=TYPES_OF_BOOKS)
+    number_of_pages = models.IntegerField()
+    language = models.CharField(max_length=255)
+    cost = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    link = models.CharField(max_length=255, blank=True)
+    tags = models.ManyToManyField('Tag')
+    reviews = models.ManyToManyField('Review')
+    image = models.ImageField(null=True, upload_to=book_image_file_path)
+
+    def __str__(self):
+        return self.title
+
+
 class Tag(models.Model):
     """Tag for filtering our books"""
     name = models.CharField(max_length=255)
@@ -73,32 +105,3 @@ class Review(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class Book(models.Model):
-    """Our virtual book storage model."""
-
-    TYPES_OF_BOOKS = (
-        ('Drama', 'Drama'),
-        ('Novel', 'Novel'),
-        ('Non-fiction', 'Non-fiction'),
-        ('Science', 'Science'),
-        ('Essay', 'Essay'),
-        ('Reportage', 'Reportage'),
-    )
-
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, )
-    title = models.CharField(max_length=255)
-    author = models.CharField(max_length=255, blank=True)
-    description = models.TextField(blank=True)
-    category = models.CharField(max_length=11, choices=TYPES_OF_BOOKS)
-    number_of_pages = models.IntegerField()
-    language = models.CharField(max_length=255)
-    cost = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
-    link = models.CharField(max_length=255, blank=True)
-    tags = models.ManyToManyField(Tag)
-    reviews = models.ManyToManyField(Review)
-    image = models.ImageField(null=True, upload_to=book_image_file_path)
-
-    def __str__(self):
-        return self.title
